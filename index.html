@@ -147,14 +147,14 @@ main{padding:14px}
 .gcol{position:relative;border-left:1px solid var(--rule-soft)}
 .gline{position:absolute;left:0;right:0;height:1px;background:var(--rule-soft)}
 .gblock{position:absolute;left:1px;right:1px;border-radius:4px;padding:3px 3px;overflow:hidden;
-  color:#fff;font-size:9px;line-height:1.22;text-align:left;border:none;word-break:break-all}
+  color:#1B2B36;font-size:9px;line-height:1.22;text-align:left;border:none;word-break:break-all}
 .gblock b,.gblock span{display:block}
 .gblock b{font-size:10px;font-weight:700;letter-spacing:-.04em}
 .gblock .gt{font-family:var(--mono);font-size:8.5px;opacity:.85}
 .gblock .gab{font-size:8px;opacity:.95;margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gblock.cancelled{opacity:.42;text-decoration:line-through}
-.gblock.makeup{outline:2px dashed rgba(255,255,255,.75);outline-offset:-2px}
-.gblock.hasab{box-shadow:inset 0 0 0 1.5px #F2C14E}
+.gblock.makeup{outline:2px dashed rgba(27,43,54,.55);outline-offset:-2px}
+.gblock.hasab{box-shadow:inset 0 0 0 1.5px #D9822B}
 .hint{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);text-align:center;letter-spacing:.05em;padding:8px 14px 0}
 
 /* ── FAB ── */
@@ -377,6 +377,11 @@ main{padding:14px}
     <button class="btn" id="txtClear">지우기</button>
     <button class="btn primary" id="txtLoad">이 코드 적용</button>
   </div>
+  <label class="prow" style="margin-top:10px">
+    <input type="checkbox" id="txtReplace">
+    <span class="pi"><span class="ps">기존 시간표 전부 지우고 교체</span>
+    <span class="pd">체크하지 않으면 기존에 더해집니다</span></span>
+  </label>
   <div class="note" style="margin-top:14px">현재 시간표를 백업하려면 아래에서 코드를 꺼내 메모 앱에 보관하세요.</div>
   <div class="btns">
     <button class="btn" id="txtShow">현재 코드 보기</button>
@@ -420,7 +425,7 @@ function sSet(k,v){
 }
 
 var state={courses:[],extras:[],overrides:{}}, touched=false;
-var SEED='{"courses":[{"id":"mj00","school":"중3단과","cls":"영어A","room":"","memo":"","days":[1],"start":"17:00","end":"19:30","from":"2026-08-17","to":"2026-08-22","color":"#2C4A63"},{"id":"mj01","school":"고2단과","cls":"영어A","room":"","memo":"","days":[1],"start":"19:30","end":"22:00","from":"2026-08-17","to":"2026-08-22","color":"#186E62"},{"id":"mj02","school":"고1단과","cls":"영어A","room":"","memo":"","days":[2,4],"start":"17:00","end":"19:30","from":"2026-08-17","to":"2026-08-22","color":"#8A4B2A"},{"id":"mj03","school":"고1단과","cls":"영어B","room":"","memo":"","days":[2,4],"start":"19:30","end":"22:00","from":"2026-08-17","to":"2026-08-22","color":"#8A4B2A"},{"id":"mj04","school":"고3단과","cls":"영어","room":"","memo":"","days":[3],"start":"17:00","end":"19:30","from":"2026-08-17","to":"2026-08-22","color":"#5B3E7A"},{"id":"mj05","school":"고2단과","cls":"영어B","room":"","memo":"","days":[3],"start":"19:30","end":"22:00","from":"2026-08-17","to":"2026-08-22","color":"#186E62"},{"id":"mj06","school":"고2단과","cls":"영어B","room":"","memo":"","days":[5],"start":"17:00","end":"19:30","from":"2026-08-17","to":"2026-08-22","color":"#186E62"},{"id":"mj07","school":"중3단과","cls":"영어A","room":"","memo":"","days":[5],"start":"19:30","end":"22:00","from":"2026-08-17","to":"2026-08-22","color":"#2C4A63"},{"id":"mj08","school":"고2단과","cls":"영어A","room":"","memo":"","days":[6],"start":"11:10","end":"13:40","from":"2026-08-17","to":"2026-08-22","color":"#186E62"},{"id":"mj09","school":"고3단과","cls":"영어","room":"","memo":"","days":[6],"start":"13:40","end":"16:10","from":"2026-08-17","to":"2026-08-22","color":"#5B3E7A"}],"extras":[],"overrides":{}}';
+var SEED='{"courses":[{"id":"mj00","school":"중3단과","cls":"영어A","room":"","memo":"","days":[1],"start":"17:00","end":"19:30","from":"2026-08-17","to":"2026-08-22","color":"#7BA7D4"},{"id":"mj01","school":"고2단과","cls":"영어A","room":"","memo":"","days":[1],"start":"19:30","end":"22:00","from":"2026-08-17","to":"2026-08-22","color":"#7FC4B4"},{"id":"mj02","school":"고1단과","cls":"영어A","room":"","memo":"","days":[2,4],"start":"17:00","end":"19:30","from":"2026-08-17","to":"2026-08-22","color":"#E8A87C"},{"id":"mj03","school":"고1단과","cls":"영어B","room":"","memo":"","days":[2,4],"start":"19:30","end":"22:00","from":"2026-08-17","to":"2026-08-22","color":"#E8A87C"},{"id":"mj04","school":"고3단과","cls":"영어","room":"","memo":"","days":[3],"start":"17:00","end":"19:30","from":"2026-08-17","to":"2026-08-22","color":"#B9A3D9"},{"id":"mj05","school":"고2단과","cls":"영어B","room":"","memo":"","days":[3],"start":"19:30","end":"22:00","from":"2026-08-17","to":"2026-08-22","color":"#7FC4B4"},{"id":"mj06","school":"고2단과","cls":"영어B","room":"","memo":"","days":[5],"start":"17:00","end":"19:30","from":"2026-08-17","to":"2026-08-22","color":"#7FC4B4"},{"id":"mj07","school":"중3단과","cls":"영어A","room":"","memo":"","days":[5],"start":"19:30","end":"22:00","from":"2026-08-17","to":"2026-08-22","color":"#7BA7D4"},{"id":"mj08","school":"고2단과","cls":"영어A","room":"","memo":"","days":[6],"start":"11:10","end":"13:40","from":"2026-08-17","to":"2026-08-22","color":"#7FC4B4"},{"id":"mj09","school":"고3단과","cls":"영어","room":"","memo":"","days":[6],"start":"13:40","end":"16:10","from":"2026-08-17","to":"2026-08-22","color":"#B9A3D9"}],"extras":[],"overrides":{}}';
 function save(){ touched=true; sSet(KEY,JSON.stringify(state)); }
 function normalize(){
   if(!state||typeof state!=="object")state={};
@@ -442,7 +447,7 @@ function hhmm(m){return pad(Math.floor(m/60))+":"+pad(m%60);}
 var today=new Date(), cursor=monday(today);
 
 /* ══════════ 색상 ══════════ */
-var PALETTE=["#2C4A63","#186E62","#8A4B2A","#5B3E7A","#B0523F","#2F6E8E","#6B6B2E","#A03A5E"];
+var PALETTE=["#7BA7D4","#7FC4B4","#E8A87C","#B9A3D9","#F0A6B4","#8FCB9B","#F2CE79","#9FBFD8"];
 
 /* ══════════ 유틸 ══════════ */
 var $=function(id){return document.getElementById(id);};
@@ -862,6 +867,7 @@ function applyBackup(o){
 }
 $("mText").addEventListener("click",function(){
   $("backupText").value="";
+  $("txtReplace").checked=false;
   closeSheet("menuSheet");openSheet("textSheet");
 });
 $("txtClose").addEventListener("click",function(){closeSheet("textSheet");});
@@ -888,10 +894,39 @@ $("txtLoad").addEventListener("click",function(){
   try{ o=JSON.parse(t.slice(a,b+1)); }
   catch(e){ toast("코드가 온전하지 않습니다. 전체를 복사했는지 확인하세요");return; }
   if(!o||!o.courses||!o.courses.length){toast("수업이 들어있지 않은 코드입니다");return;}
-  applyBackup(o);
-  closeSheet("textSheet");
-  toast(o.courses.length+"개 수업을 넣었습니다");
+
+  if($("txtReplace").checked){
+    if(!confirm("기존 시간표와 결석 기록이 모두 지워집니다. 진행할까요?"))return;
+    applyBackup(o);
+    closeSheet("textSheet");
+    toast(o.courses.length+"개 수업으로 교체했습니다");
+    return;
+  }
+
+  var have={};
+  state.courses.forEach(function(c){ have[sig(c)]=1; });
+  var added=0, dup=0;
+  (o.courses||[]).forEach(function(c){
+    if(!c||!c.days||!c.start||!c.end)return;
+    if(have[sig(c)]){dup++;return;}
+    have[sig(c)]=1;
+    c.id=uid();
+    state.courses.push(c);
+    added++;
+  });
+  (o.extras||[]).forEach(function(e){
+    if(!e||!e.date)return;
+    e.id=uid(); state.extras.push(e);
+  });
+  if(o.overrides)for(var k in o.overrides){ if(!state.overrides[k])state.overrides[k]=o.overrides[k]; }
+
+  save();render();closeSheet("textSheet");
+  toast(added+"개 추가"+(dup?" · "+dup+"개는 이미 있음":""));
 });
+function sig(c){
+  return [c.school||"",c.cls||"",(c.days||[]).slice().sort().join(""),
+    c.start||"",c.end||"",c.from||"",c.to||""].join("|");
+}
 $("mReset").addEventListener("click",function(){
   if(!confirm("모든 수업과 보강 기록이 지워집니다. 진행할까요?"))return;
   state={courses:[],extras:[],overrides:{}};save();render();closeAll();toast("초기화했습니다");
