@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>강의 시간표</title>
+<style>
+:root{
+  --paper:#EDF0F3;
+  --card:#FFFFFF;
+  --ink:#16222E;
+  --ink-2:#5A6B7A;
+  --rule:#C4D0DA;
+  --rule-soft:#DEE5EB;
+  --stamp-red:#BE2F39;
+  --stamp-teal:#186E62;
+  --accent:#2C4A63;
+  --sheet:rgba(22,34,46,.42);
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+  --safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;line-height:1.45;
+  -webkit-text-size-adjust:100%;
+  padding-bottom:calc(84px + var(--safe-b));
+}
+button,input,select,textarea{font-family:inherit;font-size:16px;color:inherit}
+button{cursor:pointer;border:none;background:none;padding:0}
+
+/* ── 상단 ── */
+header{
+  position:sticky;top:0;z-index:40;
+  background:var(--paper);
+  border-bottom:1px solid var(--rule);
+  padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 0;
+}
+.hdr-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.brand{font-size:19px;font-weight:800;letter-spacing:-.02em}
+.brand span{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--ink-2);letter-spacing:.08em;margin-left:7px}
+.menu-btn{width:34px;height:34px;border:1px solid var(--rule);border-radius:9px;background:var(--card);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.menu-btn i{display:block;width:15px;height:1.5px;background:var(--ink);position:relative}
+.menu-btn i::before,.menu-btn i::after{content:"";position:absolute;left:0;width:15px;height:1.5px;background:var(--ink)}
+.menu-btn i::before{top:-5px}.menu-btn i::after{top:5px}
+
+.weekbar{display:flex;align-items:center;gap:8px;margin-top:10px}
+.nav{width:32px;height:32px;border-radius:8px;border:1px solid var(--rule);background:var(--card);
+  font-size:15px;color:var(--ink-2);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wklabel{flex:1;text-align:center;font-family:var(--mono);font-size:12.5px;letter-spacing:.02em;color:var(--ink-2)}
+.wklabel b{color:var(--ink);font-weight:700}
+.today-btn{font-family:var(--mono);font-size:11px;letter-spacing:.06em;border:1px solid var(--rule);
+  background:var(--card);border-radius:7px;padding:6px 9px;color:var(--ink-2)}
+
+.days{display:flex;gap:3px;margin-top:10px}
+.day{flex:1;text-align:center;padding:6px 0 8px;border-radius:9px 9px 0 0;border:1px solid transparent;border-bottom:none}
+.day .dw{font-size:10.5px;letter-spacing:.06em;color:var(--ink-2)}
+.day .dd{font-family:var(--mono);font-size:15px;font-weight:600;margin-top:1px}
+.day.sat .dw,.day.sat .dd{color:#2F5E86}
+.day.sun .dw,.day.sun .dd{color:var(--stamp-red)}
+.day.today{background:var(--card);border-color:var(--rule)}
+.day.today .dd{position:relative}
+.day.today .dd::after{content:"";position:absolute;left:50%;transform:translateX(-50%);bottom:-4px;width:15px;height:2px;background:var(--accent)}
+
+.tabs{display:flex;gap:0;margin-top:9px;border-bottom:1px solid var(--rule);margin-left:-14px;margin-right:-14px;padding:0 14px}
+.tab{padding:8px 2px;margin-right:18px;font-size:13.5px;font-weight:600;color:var(--ink-2);
+  border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent)}
+
+/* ── 목록 보기 ── */
+main{padding:14px}
+.daygroup{margin-bottom:20px}
+.daygroup > h3{
+  display:flex;align-items:center;gap:9px;
+  font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--ink-2);
+  margin:0 0 9px;
+}
+.daygroup > h3 .dt{font-family:var(--mono);font-weight:500;letter-spacing:.04em}
+.daygroup > h3::after{content:"";flex:1;height:1px;background:var(--rule-soft)}
+.daygroup.is-today > h3{color:var(--accent)}
+
+.card{
+  position:relative;overflow:hidden;
+  background:var(--card);border:1px solid var(--rule-soft);border-radius:11px;
+  padding:11px 13px 11px 15px;margin-bottom:7px;
+  display:flex;gap:12px;align-items:flex-start;
+  text-align:left;width:100%;
+}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--c,#888)}
+.card .tm{font-family:var(--mono);font-size:12.5px;line-height:1.5;color:var(--ink-2);flex-shrink:0;padding-top:1px}
+.card .tm b{display:block;font-size:14.5px;font-weight:600;color:var(--ink)}
+.card .bd{flex:1;min-width:0}
+.card .sch,.card .cls,.card .memo{display:block}
+.card .sch{font-size:15.5px;font-weight:700;letter-spacing:-.01em}
+.card .cls{font-size:13px;color:var(--ink-2);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .memo{font-size:12.5px;color:var(--ink-2);margin-top:5px;padding-top:5px;border-top:1px dashed var(--rule-soft)}
+
+/* ── 도장 (시그니처) ── */
+.stamp{
+  position:absolute;right:10px;top:50%;
+  transform:translateY(-50%) rotate(-11deg);
+  font-size:16px;font-weight:800;letter-spacing:.16em;
+  padding:4px 9px 5px;border:2.5px solid currentColor;border-radius:5px;
+  opacity:.62;pointer-events:none;white-space:nowrap;
+}
+.st-cancel{color:var(--stamp-red)}
+.st-makeup{color:var(--stamp-teal)}
+.card.cancelled .sch,.card.cancelled .tm b{text-decoration:line-through;text-decoration-thickness:1.5px}
+.card.cancelled{background:repeating-linear-gradient(-45deg,#fff,#fff 9px,#FAF3F3 9px,#FAF3F3 18px)}
+.card.makeup{border-color:#B9D6D0}
+
+.empty{text-align:center;padding:26px 16px;color:var(--ink-2);font-size:13.5px;
+  border:1px dashed var(--rule);border-radius:11px;background:rgba(255,255,255,.5)}
+
+/* ── 주간표 격자 ── */
+#gridView{padding:0 0 14px}
+.gwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:0 14px 4px}
+.grid{position:relative;min-width:660px;background:var(--card);border:1px solid var(--rule);border-radius:11px;overflow:hidden}
+.ghead{display:grid;grid-template-columns:44px repeat(7,1fr);border-bottom:1px solid var(--rule);background:#F7F9FA}
+.ghead div{padding:7px 3px;text-align:center;font-size:11.5px;font-weight:700;letter-spacing:.04em;border-left:1px solid var(--rule-soft)}
+.ghead div:first-child{border-left:none}
+.ghead .sat{color:#2F5E86}.ghead .sun{color:var(--stamp-red)}
+.gbody{display:grid;grid-template-columns:44px repeat(7,1fr);position:relative}
+.gtimes{position:relative;border-right:1px solid var(--rule-soft)}
+.gtimes span{position:absolute;right:5px;font-family:var(--mono);font-size:10px;color:var(--ink-2);transform:translateY(-50%)}
+.gcol{position:relative;border-left:1px solid var(--rule-soft)}
+.gline{position:absolute;left:0;right:0;height:1px;background:var(--rule-soft)}
+.gblock{position:absolute;left:2px;right:2px;border-radius:5px;padding:4px 5px;overflow:hidden;
+  color:#fff;font-size:10.5px;line-height:1.25;text-align:left;border:none}
+.gblock b,.gblock span{display:block}
+.gblock b{font-size:11.5px;font-weight:700}
+.gblock .gt{font-family:var(--mono);font-size:9.5px;opacity:.85}
+.gblock.cancelled{opacity:.42;text-decoration:line-through}
+.gblock.makeup{outline:2px dashed rgba(255,255,255,.75);outline-offset:-3px}
+.hint{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);text-align:center;letter-spacing:.05em;padding:8px 14px 0}
+
+/* ── FAB ── */
+.fab{position:fixed;right:16px;bottom:calc(18px + var(--safe-b));z-index:45;
+  height:50px;padding:0 20px;border-radius:25px;background:var(--accent);color:#fff;
+  font-size:15px;font-weight:700;letter-spacing:-.01em;
+  box-shadow:0 5px 18px rgba(22,34,46,.28);display:flex;align-items:center;gap:7px}
+
+/* ── 시트/모달 ── */
+.scrim{position:fixed;inset:0;background:var(--sheet);z-index:50;opacity:0;pointer-events:none;transition:opacity .18s}
+.scrim.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;background:var(--paper);
+  border-radius:18px 18px 0 0;transform:translateY(102%);transition:transform .24s cubic-bezier(.32,.72,0,1);
+  max-height:92vh;overflow-y:auto;-webkit-overflow-scrolling:touch;
+  padding:8px 16px calc(20px + var(--safe-b));box-shadow:0 -6px 24px rgba(22,34,46,.18)}
+.sheet.on{transform:translateY(0)}
+.grab{width:38px;height:4px;border-radius:2px;background:var(--rule);margin:0 auto 12px}
+.sheet h2{font-size:17px;font-weight:800;margin:0 0 3px;letter-spacing:-.02em}
+.sheet .sub{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);margin-bottom:14px;letter-spacing:.03em}
+
+.field{margin-bottom:12px}
+.field label{display:block;font-size:11.5px;font-weight:700;letter-spacing:.07em;color:var(--ink-2);margin-bottom:5px}
+.field input[type=text],.field input[type=time],.field input[type=date],.field textarea{
+  width:100%;padding:11px 12px;border:1px solid var(--rule);border-radius:9px;background:var(--card);
+  font-size:16px;-webkit-appearance:none}
+.field textarea{min-height:62px;resize:vertical;font-size:15px}
+.row2{display:flex;gap:9px}.row2 > *{flex:1;min-width:0}
+.daypick{display:flex;gap:5px}
+.daypick button{flex:1;padding:10px 0;border:1px solid var(--rule);border-radius:9px;background:var(--card);
+  font-size:14px;font-weight:600;color:var(--ink-2)}
+.daypick button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.colors{display:flex;gap:8px;flex-wrap:wrap}
+.colors button{width:32px;height:32px;border-radius:50%;border:2px solid transparent}
+.colors button.on{border-color:var(--ink);box-shadow:inset 0 0 0 2px #fff}
+
+.btns{display:flex;gap:9px;margin-top:16px}
+.btn{flex:1;padding:14px;border-radius:11px;font-size:15px;font-weight:700;text-align:center;border:1px solid var(--rule);background:var(--card)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--stamp-red);border-color:#E8C6C9}
+.btn.wide{flex:none;width:100%}
+
+.acts{display:flex;flex-direction:column;gap:8px}
+.act{display:flex;align-items:center;gap:11px;width:100%;padding:14px 14px;background:var(--card);
+  border:1px solid var(--rule-soft);border-radius:11px;font-size:15px;font-weight:600;text-align:left}
+.act .ico{font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.04em;
+  width:36px;flex-shrink:0;color:var(--ink-2);text-align:center}
+.act.red{color:var(--stamp-red)}.act.red .ico{color:var(--stamp-red)}
+.act.teal{color:var(--stamp-teal)}.act.teal .ico{color:var(--stamp-teal)}
+.note{font-size:12px;color:var(--ink-2);line-height:1.6;margin-top:12px;padding:11px 12px;
+  background:rgba(255,255,255,.6);border:1px dashed var(--rule);border-radius:9px}
+
+#imgBox{width:100%;border:1px solid var(--rule);border-radius:9px;display:block;background:#fff}
+.prow{display:flex;gap:11px;align-items:flex-start;background:var(--card);
+  border:1px solid var(--rule-soft);border-radius:10px;padding:10px 12px;margin-bottom:7px}
+.prow input{width:21px;height:21px;margin:2px 0 0;flex-shrink:0;accent-color:var(--accent)}
+.prow .pi{flex:1;min-width:0}
+.prow .ps{font-weight:700;font-size:14.5px;letter-spacing:-.01em}
+.prow .pd{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);margin-top:3px}
+.toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(90px + var(--safe-b));
+  background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;padding:11px 18px;border-radius:22px;
+  z-index:70;opacity:0;pointer-events:none;transition:.22s}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── 인쇄 ── */
+@media print{
+  @page{size:A4 landscape;margin:10mm}
+  body{background:#fff;padding:0}
+  header,.fab,.tabs,.scrim,.sheet,.toast,.hint,.weekbar .nav,.today-btn{display:none!important}
+  #listView{display:none!important}
+  #gridView{display:block!important;padding:0}
+  .gwrap{overflow:visible;padding:0}
+  .grid{min-width:0;width:100%;border-color:#999;border-radius:0}
+  .gblock{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .ghead{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  #printTitle{display:block!important;font-size:14pt;font-weight:800;margin-bottom:8px}
+}
+#printTitle{display:none}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hdr-row">
+    <div class="brand">강의 시간표<span>TIMETABLE</span></div>
+    <button class="menu-btn" id="menuBtn" aria-label="메뉴"><i></i></button>
+  </div>
+  <div class="weekbar">
+    <button class="nav" id="prevW" aria-label="지난 주">‹</button>
+    <div class="wklabel" id="wkLabel"></div>
+    <button class="nav" id="nextW" aria-label="다음 주">›</button>
+    <button class="today-btn" id="todayBtn">이번 주</button>
+  </div>
+  <div class="days" id="dayStrip"></div>
+  <div class="tabs">
+    <button class="tab on" data-view="list">요일별 목록</button>
+    <button class="tab" data-view="grid">주간표</button>
+  </div>
+</header>
+
+<main>
+  <div id="printTitle"></div>
+  <div id="listView"></div>
+  <div id="gridView" style="display:none">
+    <div class="gwrap"><div class="grid" id="grid"></div></div>
+    <div class="hint">블록을 눌러 결강·보강 처리</div>
+  </div>
+</main>
+
+<button class="fab" id="addBtn">＋ 수업 추가</button>
+
+<div class="scrim" id="scrim"></div>
+
+<!-- 수업 추가/수정 -->
+<div class="sheet" id="formSheet">
+  <div class="grab"></div>
+  <h2 id="formTitle">수업 추가</h2>
+  <div class="sub" id="formSub">매주 반복되는 수업</div>
+
+  <div class="field"><label>학교</label><input type="text" id="fSchool" placeholder="예: 석관고" autocomplete="off"></div>
+  <div class="field"><label>반 · 학년</label><input type="text" id="fClass" placeholder="예: 고2 심화A" autocomplete="off"></div>
+
+  <div class="field" id="daysField">
+    <label>요일</label>
+    <div class="daypick" id="fDays"></div>
+  </div>
+  <div class="field" id="dateField" style="display:none">
+    <label>날짜</label><input type="date" id="fDate">
+  </div>
+
+  <div class="field row2">
+    <div><label>시작</label><input type="time" id="fStart" value="18:30" step="300"></div>
+    <div><label>종료</label><input type="time" id="fEnd" value="20:00" step="300"></div>
+  </div>
+
+  <div class="field"><label>강의실</label><input type="text" id="fRoom" placeholder="예: 3층 A강의실" autocomplete="off"></div>
+  <div class="field"><label>색상</label><div class="colors" id="fColors"></div></div>
+  <div class="field"><label>메모</label><textarea id="fMemo" placeholder="진도, 교재, 준비물 등"></textarea></div>
+
+  <div class="btns">
+    <button class="btn" id="fCancel">닫기</button>
+    <button class="btn primary" id="fSave">저장</button>
+  </div>
+  <div class="btns" id="fDelWrap" style="display:none">
+    <button class="btn danger wide" id="fDelete">이 수업 삭제</button>
+  </div>
+</div>
+
+<!-- 수업 상태 처리 -->
+<div class="sheet" id="actSheet">
+  <div class="grab"></div>
+  <h2 id="actTitle"></h2>
+  <div class="sub" id="actSub"></div>
+  <div class="acts" id="actList"></div>
+  <div class="btns"><button class="btn wide" id="actClose">닫기</button></div>
+</div>
+
+<!-- 보강 잡기 -->
+<div class="sheet" id="mkSheet">
+  <div class="grab"></div>
+  <h2>보강 잡기</h2>
+  <div class="sub" id="mkSub"></div>
+  <div class="field"><label>보강 날짜</label><input type="date" id="mkDate"></div>
+  <div class="field row2">
+    <div><label>시작</label><input type="time" id="mkStart" step="300"></div>
+    <div><label>종료</label><input type="time" id="mkEnd" step="300"></div>
+  </div>
+  <div class="field"><label>메모</label><input type="text" id="mkMemo" placeholder="예: 8/12 결강분"></div>
+  <div class="btns">
+    <button class="btn" id="mkCancel">닫기</button>
+    <button class="btn primary" id="mkSave">보강 등록</button>
+  </div>
+</div>
+
+<!-- 메뉴 -->
+<div class="sheet" id="menuSheet">
+  <div class="grab"></div>
+  <h2>저장 · 인쇄</h2>
+  <div class="sub" id="menuSub"></div>
+  <div class="acts">
+    <button class="act" id="mPhoto"><span class="ico">IMG</span>사진에서 수업 불러오기</button>
+    <button class="act" id="mExport"><span class="ico">JSON</span>백업 파일 내보내기</button>
+    <button class="act" id="mImport"><span class="ico">JSON</span>백업 파일 불러오기</button>
+    <button class="act" id="mText"><span class="ico">TXT</span>백업 코드 복사 · 붙여넣기</button>
+    <button class="act" id="mPrint"><span class="ico">PRT</span>주간표 인쇄</button>
+    <button class="act" id="mImage"><span class="ico">PNG</span>주간표 이미지로 저장</button>
+    <button class="act red" id="mReset"><span class="ico">DEL</span>전체 초기화</button>
+  </div>
+  <div class="note">아이폰에서는 파일 내보내기 대신 <b>백업 코드 복사</b>가 더 간편합니다. 메모 앱에 붙여넣어 두면 기기를 바꿔도 그대로 복원됩니다.</div>
+  <div class="btns"><button class="btn wide" id="menuClose">닫기</button></div>
+  <input type="file" id="fileInput" accept="application/json,.json" style="display:none">
+</div>
+
+<!-- 백업 코드 -->
+<div class="sheet" id="textSheet">
+  <div class="grab"></div>
+  <h2>백업 코드</h2>
+  <div class="sub">전체 선택 → 복사해서 보관하세요</div>
+  <div class="field"><textarea id="backupText" style="min-height:170px;font-family:var(--mono);font-size:12px"></textarea></div>
+  <div class="btns">
+    <button class="btn" id="txtCopy">복사</button>
+    <button class="btn primary" id="txtLoad">이 코드로 복원</button>
+  </div>
+  <div class="btns"><button class="btn wide" id="txtClose">닫기</button></div>
+</div>
+
+<!-- 이미지 -->
+<div class="sheet" id="imgSheet">
+  <div class="grab"></div>
+  <h2>주간표 이미지</h2>
+  <div class="sub">이미지를 길게 눌러 사진에 저장</div>
+  <img id="imgBox" alt="주간 시간표">
+  <div class="btns"><button class="btn wide" id="imgClose">닫기</button></div>
+</div>
+
+<!-- 사진에서 불러오기 -->
+<div class="sheet" id="photoSheet">
+  <div class="grab"></div>
+  <h2>사진에서 수업 불러오기</h2>
+  <div class="sub">시간표 사진을 읽어 수업으로 만듭니다</div>
+
+  <div class="field" id="keyField">
+    <label>API 키 (최초 1회만)</label>
+    <input type="text" id="apiKey" placeholder="sk-ant-..." autocomplete="off" autocapitalize="off" spellcheck="false">
+    <div class="note" style="margin-top:8px">키가 없으면 아래 <b>사진 없이 넣는 법</b>을 쓰세요. 키는 이 기기에만 저장됩니다.</div>
+  </div>
+
+  <button class="act" id="pPick" style="margin-bottom:12px"><span class="ico">＋</span>사진 선택 · 촬영</button>
+  <input type="file" id="photoInput" accept="image/*" style="display:none">
+  <img id="photoPrev" alt="" style="display:none;width:100%;border:1px solid var(--rule);border-radius:9px;margin-bottom:12px">
+
+  <div id="pStatus" class="note" style="display:none"></div>
+  <div id="pResults"></div>
+
+  <div class="btns">
+    <button class="btn" id="pClose">닫기</button>
+    <button class="btn primary" id="pRun">사진 읽기</button>
+  </div>
+  <div class="btns" id="pAddWrap" style="display:none">
+    <button class="btn primary wide" id="pAdd">선택한 수업 추가</button>
+  </div>
+
+  <div class="note"><b>사진 없이 넣는 법</b><br>시간표 사진을 Claude 대화창에 올리고 “시간표 앱 백업 코드로 만들어줘”라고 하면 코드를 받습니다. 메뉴 → <b>백업 코드 복사·붙여넣기</b>에 붙여 넣으면 그대로 들어갑니다.</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ══════════ 저장소 ══════════ */
+var KEY="ttable.v1", mem=null;
+function load(){
+  try{var r=localStorage.getItem(KEY); if(r) return JSON.parse(r);}catch(e){}
+  return mem||{courses:[],extras:[],overrides:{}};
+}
+function save(){
+  mem=state;
+  try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}
+}
+var state=load();
+if(!state.courses)state.courses=[];
+if(!state.extras)state.extras=[];
+if(!state.overrides)state.overrides={};
+
+/* ══════════ 날짜 ══════════ */
+var DW=["일","월","화","수","목","금","토"];
+var ORDER=[1,2,3,4,5,6,0];
+function pad(n){return n<10?"0"+n:""+n;}
+function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());}
+function parseYmd(s){var p=s.split("-");return new Date(+p[0],+p[1]-1,+p[2]);}
+function addDays(d,n){var x=new Date(d.getTime());x.setDate(x.getDate()+n);return x;}
+function monday(d){var x=new Date(d.getFullYear(),d.getMonth(),d.getDate());var g=x.getDay();return addDays(x,g===0?-6:1-g);}
+function mins(t){var p=(t||"0:0").split(":");return (+p[0])*60+(+p[1]);}
+function hhmm(m){return pad(Math.floor(m/60))+":"+pad(m%60);}
+var today=new Date(), cursor=monday(today);
+
+/* ══════════ 색상 ══════════ */
+var PALETTE=["#2C4A63","#186E62","#8A4B2A","#5B3E7A","#B0523F","#2F6E8E","#6B6B2E","#A03A5E"];
+
+/* ══════════ 유틸 ══════════ */
+var $=function(id){return document.getElementById(id);};
+function toast(msg){var t=$("toast");t.textContent=msg;t.classList.add("on");
+  clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove("on");},1900);}
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function uid(){return Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+
+/* ══════════ 시트 ══════════ */
+var openSheets=[];
+function openSheet(id){var s=$(id);s.classList.add("on");$("scrim").classList.add("on");
+  if(openSheets.indexOf(id)<0)openSheets.push(id);}
+function closeSheet(id){$(id).classList.remove("on");
+  openSheets=openSheets.filter(function(x){return x!==id;});
+  if(!openSheets.length)$("scrim").classList.remove("on");}
+function closeAll(){openSheets.slice().forEach(closeSheet);}
+$("scrim").addEventListener("click",closeAll);
+
+/* ══════════ 수업 발생(occurrence) 계산 ══════════ */
+function occKey(id,date){return id+"#"+date;}
+function occStatus(id,date){var o=state.overrides[occKey(id,date)];return o?o.status:null;}
+
+function occurrencesOn(dateStr){
+  var d=parseYmd(dateStr), dow=d.getDay(), out=[];
+  state.courses.forEach(function(c){
+    if(c.days.indexOf(dow)<0)return;
+    out.push({id:c.id,ref:c,date:dateStr,start:c.start,end:c.end,
+      school:c.school,cls:c.cls,room:c.room,memo:c.memo,color:c.color,
+      status:occStatus(c.id,dateStr),extra:false});
+  });
+  state.extras.forEach(function(e){
+    if(e.date!==dateStr)return;
+    out.push({id:e.id,ref:e,date:dateStr,start:e.start,end:e.end,
+      school:e.school,cls:e.cls,room:e.room,memo:e.memo,color:e.color,
+      status:e.status||"makeup",extra:true});
+  });
+  out.sort(function(a,b){return mins(a.start)-mins(b.start);});
+  return out;
+}
+function weekDates(){var a=[];for(var i=0;i<7;i++)a.push(ymd(addDays(cursor,i)));return a;}
+
+/* ══════════ 렌더 ══════════ */
+var view="list";
+
+function render(){
+  renderHeader();
+  if(view==="list"){$("listView").style.display="";$("gridView").style.display="none";renderList();}
+  else{$("listView").style.display="none";$("gridView").style.display="";renderGrid();}
+}
+
+function renderHeader(){
+  var s=cursor,e=addDays(cursor,6);
+  var lbl=(s.getMonth()+1)+"월 "+s.getDate()+"일 – "+(e.getMonth()+1)+"월 "+e.getDate()+"일";
+  $("wkLabel").innerHTML="<b>"+s.getFullYear()+"</b> &nbsp;"+lbl;
+  $("printTitle").textContent=s.getFullYear()+"년 "+lbl+" 강의 시간표";
+
+  var t=ymd(today),h="";
+  weekDates().forEach(function(ds,i){
+    var d=parseYmd(ds),dow=d.getDay();
+    h+='<div class="day'+(ds===t?" today":"")+(dow===6?" sat":"")+(dow===0?" sun":"")+'">'+
+       '<div class="dw">'+DW[dow]+'</div><div class="dd">'+d.getDate()+'</div></div>';
+  });
+  $("dayStrip").innerHTML=h;
+}
+
+function renderList(){
+  var t=ymd(today),h="",any=false;
+  weekDates().forEach(function(ds){
+    var d=parseYmd(ds),list=occurrencesOn(ds);
+    if(!list.length)return;
+    any=true;
+    h+='<div class="daygroup'+(ds===t?" is-today":"")+'"><h3>'+DW[d.getDay()]+'요일'+
+       '<span class="dt">'+(d.getMonth()+1)+'.'+pad(d.getDate())+'</span></h3>';
+    list.forEach(function(o){h+=cardHTML(o);});
+    h+='</div>';
+  });
+  if(!any) h='<div class="empty">이번 주 등록된 수업이 없습니다.<br>아래 <b>＋ 수업 추가</b>로 시작하세요.</div>';
+  $("listView").innerHTML=h;
+}
+
+function cardHTML(o){
+  var cls="card"+(o.status==="cancelled"?" cancelled":"")+(o.status==="makeup"?" makeup":"");
+  var stamp="";
+  if(o.status==="cancelled")stamp='<span class="stamp st-cancel">결강</span>';
+  else if(o.status==="makeup")stamp='<span class="stamp st-makeup">보강</span>';
+  var sub=[o.cls,o.room].filter(Boolean).join(" · ");
+  return '<button class="'+cls+'" style="--c:'+esc(o.color)+'" data-occ="'+esc(o.id)+'" data-date="'+esc(o.date)+'">'+
+    '<span class="tm"><b>'+esc(o.start)+'</b>'+esc(o.end)+'</span>'+
+    '<span class="bd"><span class="sch">'+esc(o.school||"수업")+'</span>'+
+    (sub?'<span class="cls">'+esc(sub)+'</span>':"")+
+    (o.memo?'<span class="memo">'+esc(o.memo)+'</span>':"")+'</span>'+stamp+'</button>';
+}
+
+function weekRange(){
+  var lo=24*60,hi=0;
+  weekDates().forEach(function(ds){
+    occurrencesOn(ds).forEach(function(o){
+      lo=Math.min(lo,mins(o.start));hi=Math.max(hi,mins(o.end));});
+  });
+  if(hi<=lo){lo=14*60;hi=23*60;}
+  lo=Math.floor(lo/60)*60;hi=Math.ceil(hi/60)*60;
+  if(hi-lo<180)hi=lo+180;
+  return {lo:lo,hi:hi};
+}
+
+function renderGrid(){
+  var r=weekRange(),span=r.hi-r.lo,PX=54,H=span/60*PX;
+  var t=ymd(today),h="";
+  h+='<div class="ghead"><div></div>';
+  weekDates().forEach(function(ds){
+    var d=parseYmd(ds),dow=d.getDay();
+    h+='<div class="'+(dow===6?"sat":dow===0?"sun":"")+'">'+DW[dow]+
+       '<br><span style="font-family:var(--mono);font-weight:500;font-size:10px;opacity:.7">'+
+       (d.getMonth()+1)+'.'+pad(d.getDate())+'</span></div>';
+  });
+  h+='</div><div class="gbody" style="height:'+H+'px">';
+  h+='<div class="gtimes">';
+  for(var m=r.lo;m<=r.hi;m+=60) h+='<span style="top:'+((m-r.lo)/60*PX)+'px">'+pad(Math.floor(m/60))+'</span>';
+  h+='</div>';
+
+  weekDates().forEach(function(ds){
+    h+='<div class="gcol"'+(ds===t?' style="background:#F5F8FA"':"")+'>';
+    for(var m=r.lo+60;m<r.hi;m+=60) h+='<div class="gline" style="top:'+((m-r.lo)/60*PX)+'px"></div>';
+    occurrencesOn(ds).forEach(function(o){
+      var top=(mins(o.start)-r.lo)/60*PX, ht=Math.max(24,(mins(o.end)-mins(o.start))/60*PX-2);
+      var cc="gblock"+(o.status==="cancelled"?" cancelled":"")+(o.status==="makeup"?" makeup":"");
+      h+='<button class="'+cc+'" style="top:'+top+'px;height:'+ht+'px;background:'+esc(o.color)+'" '+
+         'data-occ="'+esc(o.id)+'" data-date="'+esc(o.date)+'">'+
+         '<b>'+esc(o.school||"수업")+'</b>'+
+         (ht>40?'<span class="gt">'+esc(o.start)+'–'+esc(o.end)+'</span>':"")+
+         (ht>56&&o.cls?'<span>'+esc(o.cls)+'</span>':"")+'</button>';
+    });
+    h+='</div>';
+  });
+  h+='</div>';
+  $("grid").innerHTML=h;
+}
+
+document.addEventListener("click",function(ev){
+  var b=ev.target.closest("[data-occ]");
+  if(b)openActions(b.getAttribute("data-occ"),b.getAttribute("data-date"));
+});
+
+/* ══════════ 상태 처리 시트 ══════════ */
+var curOcc=null;
+function findOcc(id,date){
+  var list=occurrencesOn(date);
+  for(var i=0;i<list.length;i++) if(list[i].id===id) return list[i];
+  return null;
+}
+function openActions(id,date){
+  var o=findOcc(id,date); if(!o)return;
+  curOcc=o;
+  var d=parseYmd(date);
+  $("actTitle").textContent=(o.school||"수업")+(o.cls?" · "+o.cls:"");
+  $("actSub").textContent=(d.getMonth()+1)+"월 "+d.getDate()+"일 ("+DW[d.getDay()]+") "+o.start+"–"+o.end;
+  var h="";
+  if(o.status==="cancelled") h+='<button class="act" data-a="restore"><span class="ico">↺</span>결강 취소 (정상 수업)</button>';
+  else h+='<button class="act red" data-a="cancel"><span class="ico">✕</span>이 날짜 결강 처리</button>';
+  h+='<button class="act teal" data-a="makeup"><span class="ico">＋</span>보강 잡기</button>';
+  if(o.extra){
+    h+='<button class="act" data-a="edit"><span class="ico">✎</span>보강 수정</button>';
+    h+='<button class="act red" data-a="del"><span class="ico">DEL</span>이 보강 삭제</button>';
+  }else{
+    h+='<button class="act" data-a="edit"><span class="ico">✎</span>수업 정보 수정</button>';
+  }
+  $("actList").innerHTML=h;
+  openSheet("actSheet");
+}
+$("actList").addEventListener("click",function(ev){
+  var b=ev.target.closest("[data-a]"); if(!b||!curOcc)return;
+  var a=b.getAttribute("data-a"),o=curOcc;
+  if(a==="cancel"){
+    if(o.extra){o.ref.status="cancelled";}
+    else state.overrides[occKey(o.id,o.date)]={status:"cancelled"};
+    save();render();closeSheet("actSheet");toast("결강 처리했습니다");
+  }else if(a==="restore"){
+    if(o.extra){o.ref.status="makeup";}
+    else delete state.overrides[occKey(o.id,o.date)];
+    save();render();closeSheet("actSheet");toast("정상 수업으로 되돌렸습니다");
+  }else if(a==="makeup"){
+    closeSheet("actSheet");openMakeup(o);
+  }else if(a==="edit"){
+    closeSheet("actSheet");openForm(o.extra?"extra":"course",o.ref);
+  }else if(a==="del"){
+    state.extras=state.extras.filter(function(x){return x.id!==o.id;});
+    save();render();closeSheet("actSheet");toast("보강을 삭제했습니다");
+  }
+});
+$("actClose").addEventListener("click",function(){closeSheet("actSheet");});
+
+/* ══════════ 보강 잡기 ══════════ */
+var mkFrom=null;
+function openMakeup(o){
+  mkFrom=o;
+  var d=parseYmd(o.date);
+  $("mkSub").textContent=(o.school||"수업")+" · "+(d.getMonth()+1)+"/"+d.getDate()+" 결강분";
+  $("mkDate").value=o.date;
+  $("mkStart").value=o.start;$("mkEnd").value=o.end;
+  $("mkMemo").value=(d.getMonth()+1)+"/"+d.getDate()+" 결강 보강";
+  openSheet("mkSheet");
+}
+$("mkCancel").addEventListener("click",function(){closeSheet("mkSheet");});
+$("mkSave").addEventListener("click",function(){
+  var date=$("mkDate").value,s=$("mkStart").value,e=$("mkEnd").value;
+  if(!date||!s||!e){toast("날짜와 시간을 입력하세요");return;}
+  if(mins(e)<=mins(s)){toast("종료 시간이 시작보다 빨라요");return;}
+  state.extras.push({id:uid(),date:date,start:s,end:e,status:"makeup",
+    school:mkFrom.school,cls:mkFrom.cls,room:mkFrom.room,color:mkFrom.color,memo:$("mkMemo").value.trim()});
+  save();
+  cursor=monday(parseYmd(date));
+  render();closeSheet("mkSheet");toast("보강을 등록했습니다");
+});
+
+/* ══════════ 수업 추가/수정 폼 ══════════ */
+var editing=null,editKind="course",pickedDays=[],pickedColor=PALETTE[0];
+
+(function initForm(){
+  var h="";
+  ORDER.forEach(function(d){h+='<button type="button" data-d="'+d+'">'+DW[d]+'</button>';});
+  $("fDays").innerHTML=h;
+  $("fDays").addEventListener("click",function(ev){
+    var b=ev.target.closest("[data-d]");if(!b)return;
+    var d=+b.getAttribute("data-d"),i=pickedDays.indexOf(d);
+    if(i<0)pickedDays.push(d);else pickedDays.splice(i,1);
+    b.classList.toggle("on");
+  });
+  var c="";
+  PALETTE.forEach(function(col){c+='<button type="button" data-c="'+col+'" style="background:'+col+'"></button>';});
+  $("fColors").innerHTML=c;
+  $("fColors").addEventListener("click",function(ev){
+    var b=ev.target.closest("[data-c]");if(!b)return;
+    pickedColor=b.getAttribute("data-c");
+    [].forEach.call($("fColors").children,function(x){x.classList.remove("on");});
+    b.classList.add("on");
+  });
+})();
+
+function setColorUI(col){
+  pickedColor=col;
+  [].forEach.call($("fColors").children,function(x){
+    x.classList.toggle("on",x.getAttribute("data-c")===col);});
+}
+function setDaysUI(days){
+  pickedDays=days.slice();
+  [].forEach.call($("fDays").children,function(x){
+    x.classList.toggle("on",days.indexOf(+x.getAttribute("data-d"))>=0);});
+}
+
+function openForm(kind,obj){
+  editKind=kind||"course";editing=obj||null;
+  var isExtra=editKind==="extra";
+  $("daysField").style.display=isExtra?"none":"";
+  $("dateField").style.display=isExtra?"":"none";
+  $("formTitle").textContent=editing?(isExtra?"보강 수정":"수업 수정"):"수업 추가";
+  $("formSub").textContent=isExtra?"특정 날짜 1회 수업":"매주 반복되는 수업";
+  $("fDelWrap").style.display=editing?"":"none";
+
+  if(editing){
+    $("fSchool").value=editing.school||"";
+    $("fClass").value=editing.cls||"";
+    $("fStart").value=editing.start||"18:30";
+    $("fEnd").value=editing.end||"20:00";
+    $("fRoom").value=editing.room||"";
+    $("fMemo").value=editing.memo||"";
+    setColorUI(editing.color||PALETTE[0]);
+    if(isExtra)$("fDate").value=editing.date;else setDaysUI(editing.days||[]);
+  }else{
+    $("fSchool").value="";$("fClass").value="";$("fRoom").value="";$("fMemo").value="";
+    $("fStart").value="18:30";$("fEnd").value="20:00";
+    $("fDate").value=ymd(today);
+    setDaysUI([]);
+    setColorUI(PALETTE[state.courses.length%PALETTE.length]);
+  }
+  openSheet("formSheet");
+}
+$("addBtn").addEventListener("click",function(){openForm("course",null);});
+$("fCancel").addEventListener("click",function(){closeSheet("formSheet");});
+
+$("fSave").addEventListener("click",function(){
+  var school=$("fSchool").value.trim();
+  if(!school){toast("학교를 입력하세요");return;}
+  var s=$("fStart").value,e=$("fEnd").value;
+  if(!s||!e){toast("시간을 입력하세요");return;}
+  if(mins(e)<=mins(s)){toast("종료 시간이 시작보다 빨라요");return;}
+  var base={school:school,cls:$("fClass").value.trim(),room:$("fRoom").value.trim(),
+    memo:$("fMemo").value.trim(),color:pickedColor,start:s,end:e};
+
+  if(editKind==="extra"){
+    if(!$("fDate").value){toast("날짜를 입력하세요");return;}
+    base.date=$("fDate").value;
+    for(var k in base) editing[k]=base[k];
+  }else{
+    if(!pickedDays.length){toast("요일을 선택하세요");return;}
+    base.days=pickedDays.slice().sort();
+    if(editing){for(var j in base) editing[j]=base[j];}
+    else{base.id=uid();state.courses.push(base);}
+  }
+  save();
+  if(editKind==="extra")cursor=monday(parseYmd(editing.date));
+  render();closeSheet("formSheet");toast(editing?"수정했습니다":"수업을 추가했습니다");
+});
+
+$("fDelete").addEventListener("click",function(){
+  if(!editing)return;
+  if(!confirm("삭제하면 되돌릴 수 없습니다. 진행할까요?"))return;
+  if(editKind==="extra"){
+    state.extras=state.extras.filter(function(x){return x.id!==editing.id;});
+  }else{
+    state.courses=state.courses.filter(function(x){return x.id!==editing.id;});
+    Object.keys(state.overrides).forEach(function(k){
+      if(k.indexOf(editing.id+"#")===0)delete state.overrides[k];});
+  }
+  save();render();closeSheet("formSheet");toast("삭제했습니다");
+});
+
+/* ══════════ 주 이동 · 보기 전환 ══════════ */
+$("prevW").addEventListener("click",function(){cursor=addDays(cursor,-7);render();});
+$("nextW").addEventListener("click",function(){cursor=addDays(cursor,7);render();});
+$("todayBtn").addEventListener("click",function(){today=new Date();cursor=monday(today);render();});
+[].forEach.call(document.querySelectorAll(".tab"),function(t){
+  t.addEventListener("click",function(){
+    [].forEach.call(document.querySelectorAll(".tab"),function(x){x.classList.remove("on");});
+    t.classList.add("on");view=t.getAttribute("data-view");render();
+  });
+});
+(function swipe(){
+  var x0=null,y0=null;
+  document.addEventListener("touchstart",function(e){
+    if(openSheets.length)return;
+    x0=e.touches[0].clientX;y0=e.touches[0].clientY;},{passive:true});
+  document.addEventListener("touchend",function(e){
+    if(x0===null)return;
+    var dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;
+    if(Math.abs(dx)>62&&Math.abs(dx)>Math.abs(dy)*1.8){
+      cursor=addDays(cursor,dx<0?7:-7);render();}
+    x0=null;},{passive:true});
+})();
+
+/* ══════════ 메뉴 · 백업 ══════════ */
+$("menuBtn").addEventListener("click",function(){
+  var n=state.courses.length,m=state.extras.length;
+  $("menuSub").textContent="정규 수업 "+n+"개 · 보강 "+m+"개";
+  openSheet("menuSheet");
+});
+$("menuClose").addEventListener("click",function(){closeSheet("menuSheet");});
+
+function download(name,text,type){
+  var b=new Blob([text],{type:type||"application/json"});
+  var u=URL.createObjectURL(b),a=document.createElement("a");
+  a.href=u;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(function(){URL.revokeObjectURL(u);a.remove();},900);
+}
+$("mExport").addEventListener("click",function(){
+  download("시간표백업_"+ymd(new Date())+".json",JSON.stringify(state,null,1));
+  toast("백업 파일을 내보냈습니다");
+});
+$("mImport").addEventListener("click",function(){$("fileInput").click();});
+$("fileInput").addEventListener("change",function(){
+  var f=this.files&&this.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(){
+    try{applyBackup(JSON.parse(r.result));toast("불러왔습니다");closeAll();}
+    catch(e){toast("파일을 읽지 못했습니다");}
+  };
+  r.readAsText(f);this.value="";
+});
+function applyBackup(o){
+  if(!o||typeof o!=="object")throw 0;
+  state={courses:o.courses||[],extras:o.extras||[],overrides:o.overrides||{}};
+  save();render();
+}
+$("mText").addEventListener("click",function(){
+  $("backupText").value=JSON.stringify(state);
+  closeSheet("menuSheet");openSheet("textSheet");
+});
+$("txtClose").addEventListener("click",function(){closeSheet("textSheet");});
+$("txtCopy").addEventListener("click",function(){
+  var ta=$("backupText");ta.select();ta.setSelectionRange(0,999999);
+  var ok=false;
+  try{ok=document.execCommand("copy");}catch(e){}
+  if(navigator.clipboard){navigator.clipboard.writeText(ta.value).then(function(){toast("복사했습니다");},function(){});}
+  else toast(ok?"복사했습니다":"길게 눌러 복사하세요");
+});
+$("txtLoad").addEventListener("click",function(){
+  try{applyBackup(JSON.parse($("backupText").value));closeSheet("textSheet");toast("복원했습니다");}
+  catch(e){toast("코드 형식이 올바르지 않습니다");}
+});
+$("mReset").addEventListener("click",function(){
+  if(!confirm("모든 수업과 보강 기록이 지워집니다. 진행할까요?"))return;
+  state={courses:[],extras:[],overrides:{}};save();render();closeAll();toast("초기화했습니다");
+});
+$("mPrint").addEventListener("click",function(){
+  view="grid";
+  [].forEach.call(document.querySelectorAll(".tab"),function(x){
+    x.classList.toggle("on",x.getAttribute("data-view")==="grid");});
+  render();
+  closeAll();
+  setTimeout(function(){window.print();},350);
+});
+
+/* ══════════ 이미지 저장 ══════════ */
+$("imgClose").addEventListener("click",function(){closeSheet("imgSheet");});
+$("mImage").addEventListener("click",function(){
+  closeSheet("menuSheet");
+  try{$("imgBox").src=drawPNG();openSheet("imgSheet");}
+  catch(e){toast("이미지를 만들지 못했습니다");}
+});
+
+function drawPNG(){
+  var r=weekRange(),span=r.hi-r.lo;
+  var S=2, W=1180, TIMEW=64, HEADH=64, TITLEH=76, PAD=24;
+  var PXH=Math.max(56,Math.min(96,760/(span/60)));
+  var bodyH=span/60*PXH;
+  var H=TITLEH+HEADH+bodyH+PAD;
+  var cv=document.createElement("canvas");
+  cv.width=W*S;cv.height=H*S;
+  var g=cv.getContext("2d");g.scale(S,S);
+  var F='-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif';
+  var M='ui-monospace,Menlo,monospace';
+
+  g.fillStyle="#FFFFFF";g.fillRect(0,0,W,H);
+
+  // 제목
+  var s=cursor,e=addDays(cursor,6);
+  g.fillStyle="#16222E";g.font="700 25px "+F;g.textBaseline="alphabetic";
+  g.fillText("강의 시간표",PAD,46);
+  g.fillStyle="#5A6B7A";g.font="15px "+M;
+  g.fillText(s.getFullYear()+". "+(s.getMonth()+1)+"."+s.getDate()+" – "+(e.getMonth()+1)+"."+e.getDate(),PAD+152,46);
+  g.strokeStyle="#C4D0DA";g.lineWidth=1;
+  g.beginPath();g.moveTo(PAD,TITLEH-14);g.lineTo(W-PAD,TITLEH-14);g.stroke();
+
+  var gx=PAD+TIMEW, gw=W-PAD*2-TIMEW, cw=gw/7, gy=TITLEH+HEADH;
+
+  // 헤더
+  g.fillStyle="#F2F5F7";g.fillRect(PAD,TITLEH,W-PAD*2,HEADH);
+  g.textAlign="center";
+  weekDates().forEach(function(ds,i){
+    var d=parseYmd(ds),dow=d.getDay(),cx=gx+cw*i+cw/2;
+    g.fillStyle=dow===0?"#BE2F39":dow===6?"#2F5E86":"#16222E";
+    g.font="700 17px "+F;g.fillText(DW[dow],cx,TITLEH+27);
+    g.fillStyle="#5A6B7A";g.font="13px "+M;
+    g.fillText((d.getMonth()+1)+"."+pad(d.getDate()),cx,TITLEH+48);
+  });
+
+  // 격자
+  g.strokeStyle="#DEE5EB";
+  for(var m=r.lo;m<=r.hi;m+=60){
+    var y=gy+(m-r.lo)/60*PXH;
+    g.beginPath();g.moveTo(PAD,y);g.lineTo(W-PAD,y);g.stroke();
+    g.fillStyle="#5A6B7A";g.font="13px "+M;g.textAlign="right";
+    g.fillText(pad(Math.floor(m/60))+":00",gx-10,y+5);
+  }
+  for(var i2=0;i2<=7;i2++){
+    var x=gx+cw*i2;
+    g.beginPath();g.moveTo(x,TITLEH);g.lineTo(x,gy+bodyH);g.stroke();
+  }
+  g.strokeStyle="#C4D0DA";g.strokeRect(PAD,TITLEH,W-PAD*2,HEADH+bodyH);
+
+  // 블록
+  g.textAlign="left";
+  weekDates().forEach(function(ds,i){
+    occurrencesOn(ds).forEach(function(o){
+      var y=gy+(mins(o.start)-r.lo)/60*PXH;
+      var h=Math.max(30,(mins(o.end)-mins(o.start))/60*PXH-3);
+      var x=gx+cw*i+3,w=cw-6;
+      g.globalAlpha=o.status==="cancelled"?.3:1;
+      g.fillStyle=o.color||"#2C4A63";
+      rr(g,x,y+1.5,w,h,6);g.fill();
+      if(o.status==="makeup"){
+        g.globalAlpha=.9;g.strokeStyle="#FFFFFF";g.lineWidth=2;g.setLineDash([5,4]);
+        rr(g,x+4,y+5.5,w-8,h-8,4);g.stroke();g.setLineDash([]);g.lineWidth=1;
+      }
+      g.globalAlpha=1;
+      g.fillStyle=o.status==="cancelled"?"#8A9AA6":"#FFFFFF";
+      g.font="700 14px "+F;
+      clipText(g,o.school||"수업",x+7,y+21,w-14);
+      if(h>46){g.font="11.5px "+M;g.globalAlpha=.9;
+        clipText(g,o.start+"–"+o.end,x+7,y+37,w-14);g.globalAlpha=1;}
+      if(h>66&&o.cls){g.font="12px "+F;g.globalAlpha=.92;
+        clipText(g,o.cls,x+7,y+54,w-14);g.globalAlpha=1;}
+      if(o.status==="cancelled"){
+        g.save();g.translate(x+w/2,y+h/2);g.rotate(-11*Math.PI/180);
+        g.fillStyle="#BE2F39";g.globalAlpha=.85;g.textAlign="center";
+        g.font="800 19px "+F;g.fillText("결강",0,7);
+        g.strokeStyle="#BE2F39";g.lineWidth=2.5;
+        rr(g,-31,-15,62,30,4);g.stroke();
+        g.restore();g.textAlign="left";g.globalAlpha=1;g.lineWidth=1;
+      }
+    });
+  });
+  return cv.toDataURL("image/png");
+}
+function rr(g,x,y,w,h,r){
+  r=Math.min(r,w/2,h/2);
+  g.beginPath();g.moveTo(x+r,y);
+  g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);
+  g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath();
+}
+function clipText(g,txt,x,y,max){
+  var t=String(txt);
+  if(g.measureText(t).width<=max){g.fillText(t,x,y);return;}
+  while(t.length>1&&g.measureText(t+"…").width>max)t=t.slice(0,-1);
+  g.fillText(t+"…",x,y);
+}
+
+/* ══════════ 사진에서 불러오기 ══════════ */
+var KKEY="ttable.key", photoB64=null, photoMime=null, parsed=[];
+
+function getKey(){try{return localStorage.getItem(KKEY)||"";}catch(e){return "";}}
+function setKey(v){try{localStorage.setItem(KKEY,v);}catch(e){}}
+
+$("mPhoto").addEventListener("click",function(){
+  closeSheet("menuSheet");
+  var k=getKey();
+  $("apiKey").value=k;
+  $("keyField").style.display=k?"none":"";
+  $("pStatus").style.display="none";
+  $("pResults").innerHTML="";
+  $("pAddWrap").style.display="none";
+  openSheet("photoSheet");
+});
+$("pClose").addEventListener("click",function(){closeSheet("photoSheet");});
+$("pPick").addEventListener("click",function(){$("photoInput").click();});
+
+$("photoInput").addEventListener("change",function(){
+  var f=this.files&&this.files[0]; this.value="";
+  if(!f)return;
+  shrink(f,function(dataUrl){
+    photoMime="image/jpeg";
+    photoB64=dataUrl.split(",")[1];
+    var p=$("photoPrev"); p.src=dataUrl; p.style.display="";
+    $("pResults").innerHTML=""; $("pAddWrap").style.display="none";
+    setStatus("사진을 넣었습니다. <b>사진 읽기</b>를 누르세요.");
+  });
+});
+
+function shrink(file,cb){
+  var fr=new FileReader();
+  fr.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var MAX=1568, w=img.width, h=img.height;
+      var s=Math.min(1,MAX/Math.max(w,h));
+      var cv=document.createElement("canvas");
+      cv.width=Math.round(w*s); cv.height=Math.round(h*s);
+      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
+      cb(cv.toDataURL("image/jpeg",.9));
+    };
+    img.onerror=function(){toast("사진을 읽지 못했습니다");};
+    img.src=fr.result;
+  };
+  fr.readAsDataURL(file);
+}
+function setStatus(html){var s=$("pStatus");s.innerHTML=html;s.style.display="";}
+
+var PROMPT="이 이미지는 학원 강사의 강의 시간표다. 표에 있는 모든 수업을 빠짐없이 추출해 JSON 배열로만 답하라.\n"+
+"각 원소 형식: {\"school\":\"학교명 또는 소속\",\"cls\":\"반 또는 학년\",\"days\":[요일번호],\"start\":\"HH:MM\",\"end\":\"HH:MM\",\"room\":\"강의실\"}\n"+
+"요일번호는 일=0, 월=1, 화=2, 수=3, 목=4, 금=5, 토=6.\n"+
+"같은 수업이 여러 요일에 있으면 days 배열에 모두 넣어 한 원소로 합쳐라.\n"+
+"시간은 24시간 형식. 종료 시간이 없으면 시작 +90분으로 추정하라.\n"+
+"없는 항목은 빈 문자열. 설명·마크다운·코드펜스 없이 JSON 배열만 출력하라.";
+
+$("pRun").addEventListener("click",function(){
+  var key=$("apiKey").value.trim()||getKey();
+  if(!key){toast("API 키를 입력하세요");return;}
+  if(!photoB64){toast("사진을 먼저 선택하세요");return;}
+  setKey(key); $("keyField").style.display="none";
+  setStatus("사진을 읽는 중입니다… 10초쯤 걸립니다.");
+  $("pRun").disabled=true;
+
+  fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"content-type":"application/json","x-api-key":key,
+      "anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:2000,
+      messages:[{role:"user",content:[
+        {type:"image",source:{type:"base64",media_type:photoMime,data:photoB64}},
+        {type:"text",text:PROMPT}]}]})
+  }).then(function(r){return r.json();}).then(function(d){
+    $("pRun").disabled=false;
+    if(d.error){setStatus("읽지 못했습니다: "+esc(d.error.message||"오류"));return;}
+    var txt=(d.content||[]).filter(function(x){return x.type==="text";})
+      .map(function(x){return x.text;}).join("\n");
+    var arr;
+    try{
+      var clean=txt.replace(/```json/g,"").replace(/```/g,"").trim();
+      var a=clean.indexOf("["), b=clean.lastIndexOf("]");
+      arr=JSON.parse(clean.slice(a,b+1));
+    }catch(e){setStatus("결과를 해석하지 못했습니다. 더 또렷한 사진으로 다시 시도하세요.");return;}
+    showParsed(arr);
+  }).catch(function(){
+    $("pRun").disabled=false;
+    setStatus("연결하지 못했습니다. 인터넷 상태와 API 키를 확인하세요.");
+  });
+});
+
+function showParsed(arr){
+  parsed=(arr||[]).filter(function(x){
+    return x&&x.start&&x.end&&x.days&&x.days.length;});
+  if(!parsed.length){setStatus("수업을 찾지 못했습니다. 표가 잘 보이게 다시 찍어 보세요.");return;}
+  setStatus("<b>"+parsed.length+"개</b> 찾았습니다. 넣을 수업만 체크하세요.");
+  var h="";
+  parsed.forEach(function(c,i){
+    var dl=(c.days||[]).slice().sort(function(a,b){
+      return (a===0?7:a)-(b===0?7:b);}).map(function(d){return DW[d];}).join("·");
+    var sub=[c.cls,c.room].filter(Boolean).join(" · ");
+    h+='<label class="prow"><input type="checkbox" data-i="'+i+'" checked>'+
+       '<span class="pi"><span class="ps">'+esc(c.school||"수업")+'</span>'+
+       '<span class="pd">'+esc(dl)+' &nbsp;'+esc(c.start)+'–'+esc(c.end)+
+       (sub?' &nbsp;'+esc(sub):"")+'</span></span></label>';
+  });
+  $("pResults").innerHTML=h;
+  $("pAddWrap").style.display="";
+}
+
+$("pAdd").addEventListener("click",function(){
+  var boxes=$("pResults").querySelectorAll("input[type=checkbox]"), n=0;
+  var seen={};
+  state.courses.forEach(function(c){
+    if(seen[c.school]===undefined)seen[c.school]=c.color;});
+  [].forEach.call(boxes,function(b){
+    if(!b.checked)return;
+    var c=parsed[+b.getAttribute("data-i")];
+    var school=String(c.school||"수업").trim();
+    if(seen[school]===undefined)
+      seen[school]=PALETTE[Object.keys(seen).length%PALETTE.length];
+    state.courses.push({id:uid(),school:school,
+      cls:String(c.cls||"").trim(),room:String(c.room||"").trim(),memo:"",
+      days:c.days.map(Number).filter(function(d){return d>=0&&d<=6;}),
+      start:fixTime(c.start),end:fixTime(c.end),color:seen[school]});
+    n++;
+  });
+  if(!n){toast("선택한 수업이 없습니다");return;}
+  save();render();closeSheet("photoSheet");toast(n+"개 수업을 추가했습니다");
+});
+function fixTime(t){
+  var p=String(t).split(":");
+  var h=Math.max(0,Math.min(23,parseInt(p[0],10)||0));
+  var m=Math.max(0,Math.min(59,parseInt(p[1],10)||0));
+  return pad(h)+":"+pad(m);
+}
+
+render();
+})();
+</script>
+</body>
+</html>
