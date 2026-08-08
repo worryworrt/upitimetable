@@ -197,6 +197,11 @@ main{padding:14px}
 .prow .pi{flex:1;min-width:0}
 .prow .ps{font-weight:700;font-size:14.5px;letter-spacing:-.01em}
 .prow .pd{font-family:var(--mono);font-size:11.5px;color:var(--ink-2);margin-top:3px}
+.thumbs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:12px}
+.thumbs figure{position:relative;margin:0;width:66px;height:66px}
+.thumbs img{width:100%;height:100%;object-fit:cover;border:1px solid var(--rule);border-radius:8px;display:block}
+.thumbs button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;
+  background:var(--ink);color:#fff;font-size:13px;line-height:22px;text-align:center}
 .toast{position:fixed;left:50%;transform:translateX(-50%) translateY(20px);bottom:calc(90px + var(--safe-b));
   background:var(--ink);color:#fff;font-size:13.5px;font-weight:600;padding:11px 18px;border-radius:22px;
   z-index:70;opacity:0;pointer-events:none;transition:.22s}
@@ -318,10 +323,9 @@ main{padding:14px}
   <h2>저장 · 인쇄</h2>
   <div class="sub" id="menuSub"></div>
   <div class="acts">
-    <button class="act" id="mPhoto"><span class="ico">IMG</span>사진에서 수업 불러오기</button>
     <button class="act" id="mExport"><span class="ico">JSON</span>백업 파일 내보내기</button>
     <button class="act" id="mImport"><span class="ico">JSON</span>백업 파일 불러오기</button>
-    <button class="act" id="mText"><span class="ico">TXT</span>백업 코드 복사 · 붙여넣기</button>
+    <button class="act" id="mText"><span class="ico">TXT</span>코드로 시간표 넣기 · 백업</button>
     <button class="act" id="mPrint"><span class="ico">PRT</span>주간표 인쇄</button>
     <button class="act" id="mImage"><span class="ico">PNG</span>주간표 이미지로 저장</button>
     <button class="act red" id="mReset"><span class="ico">DEL</span>전체 초기화</button>
@@ -334,12 +338,17 @@ main{padding:14px}
 <!-- 백업 코드 -->
 <div class="sheet" id="textSheet">
   <div class="grab"></div>
-  <h2>백업 코드</h2>
-  <div class="sub">전체 선택 → 복사해서 보관하세요</div>
-  <div class="field"><textarea id="backupText" style="min-height:170px;font-family:var(--mono);font-size:12px"></textarea></div>
+  <h2>코드로 시간표 넣기</h2>
+  <div class="sub">받은 코드를 붙여넣고 아래 버튼을 누르세요</div>
+  <div class="field"><textarea id="backupText" placeholder="여기에 코드를 붙여넣으세요" style="min-height:150px;font-family:var(--mono);font-size:12px" autocapitalize="off" spellcheck="false"></textarea></div>
   <div class="btns">
+    <button class="btn" id="txtClear">지우기</button>
+    <button class="btn primary" id="txtLoad">이 코드 적용</button>
+  </div>
+  <div class="note" style="margin-top:14px">현재 시간표를 백업하려면 아래에서 코드를 꺼내 메모 앱에 보관하세요.</div>
+  <div class="btns">
+    <button class="btn" id="txtShow">현재 코드 보기</button>
     <button class="btn" id="txtCopy">복사</button>
-    <button class="btn primary" id="txtLoad">이 코드로 복원</button>
   </div>
   <div class="btns"><button class="btn wide" id="txtClose">닫기</button></div>
 </div>
@@ -351,36 +360,6 @@ main{padding:14px}
   <div class="sub">이미지를 길게 눌러 사진에 저장</div>
   <img id="imgBox" alt="주간 시간표">
   <div class="btns"><button class="btn wide" id="imgClose">닫기</button></div>
-</div>
-
-<!-- 사진에서 불러오기 -->
-<div class="sheet" id="photoSheet">
-  <div class="grab"></div>
-  <h2>사진에서 수업 불러오기</h2>
-  <div class="sub">시간표 사진을 읽어 수업으로 만듭니다</div>
-
-  <div class="field" id="keyField">
-    <label>API 키 (최초 1회만)</label>
-    <input type="text" id="apiKey" placeholder="sk-ant-..." autocomplete="off" autocapitalize="off" spellcheck="false">
-    <div class="note" style="margin-top:8px">키가 없으면 아래 <b>사진 없이 넣는 법</b>을 쓰세요. 키는 이 기기에만 저장됩니다.</div>
-  </div>
-
-  <button class="act" id="pPick" style="margin-bottom:12px"><span class="ico">＋</span>사진 선택 · 촬영</button>
-  <input type="file" id="photoInput" accept="image/*" style="display:none">
-  <img id="photoPrev" alt="" style="display:none;width:100%;border:1px solid var(--rule);border-radius:9px;margin-bottom:12px">
-
-  <div id="pStatus" class="note" style="display:none"></div>
-  <div id="pResults"></div>
-
-  <div class="btns">
-    <button class="btn" id="pClose">닫기</button>
-    <button class="btn primary" id="pRun">사진 읽기</button>
-  </div>
-  <div class="btns" id="pAddWrap" style="display:none">
-    <button class="btn primary wide" id="pAdd">선택한 수업 추가</button>
-  </div>
-
-  <div class="note"><b>사진 없이 넣는 법</b><br>시간표 사진을 Claude 대화창에 올리고 “시간표 앱 백업 코드로 만들어줘”라고 하면 코드를 받습니다. 메뉴 → <b>백업 코드 복사·붙여넣기</b>에 붙여 넣으면 그대로 들어갑니다.</div>
 </div>
 
 <div class="toast" id="toast"></div>
@@ -408,8 +387,9 @@ function sSet(k,v){
   return Promise.resolve();
 }
 
-var state={courses:[],extras:[],overrides:{}};
-function save(){ sSet(KEY,JSON.stringify(state)); }
+var state={courses:[],extras:[],overrides:{}}, touched=false;
+var SEED='{"courses":[{"id":"mj00","school":"중3단과","cls":"영어A","room":"","memo":"","days":[1],"start":"17:00","end":"19:30","color":"#2C4A63"},{"id":"mj01","school":"고2단과","cls":"영어A","room":"","memo":"","days":[1],"start":"19:30","end":"22:00","color":"#186E62"},{"id":"mj02","school":"고1단과","cls":"영어A","room":"","memo":"","days":[2,4],"start":"17:00","end":"19:30","color":"#8A4B2A"},{"id":"mj03","school":"고1단과","cls":"영어B","room":"","memo":"","days":[2,4],"start":"19:30","end":"22:00","color":"#8A4B2A"},{"id":"mj04","school":"고3단과","cls":"영어","room":"","memo":"","days":[3],"start":"17:00","end":"19:30","color":"#5B3E7A"},{"id":"mj05","school":"고2단과","cls":"영어B","room":"","memo":"","days":[3],"start":"19:30","end":"22:00","color":"#186E62"},{"id":"mj06","school":"고2단과","cls":"영어B","room":"","memo":"","days":[5],"start":"17:00","end":"19:30","color":"#186E62"},{"id":"mj07","school":"중3단과","cls":"영어A","room":"","memo":"","days":[5],"start":"19:30","end":"22:00","color":"#2C4A63"},{"id":"mj08","school":"고2단과","cls":"영어A","room":"","memo":"","days":[6],"start":"11:10","end":"13:40","color":"#186E62"},{"id":"mj09","school":"고3단과","cls":"영어","room":"","memo":"","days":[6],"start":"13:40","end":"16:10","color":"#5B3E7A"}],"extras":[],"overrides":{}}';
+function save(){ touched=true; sSet(KEY,JSON.stringify(state)); }
 function normalize(){
   if(!state||typeof state!=="object")state={};
   if(!state.courses)state.courses=[];
@@ -805,20 +785,36 @@ function applyBackup(o){
   save();render();
 }
 $("mText").addEventListener("click",function(){
-  $("backupText").value=JSON.stringify(state);
+  $("backupText").value="";
   closeSheet("menuSheet");openSheet("textSheet");
 });
 $("txtClose").addEventListener("click",function(){closeSheet("textSheet");});
+$("txtClear").addEventListener("click",function(){$("backupText").value="";});
+$("txtShow").addEventListener("click",function(){
+  $("backupText").value=JSON.stringify(state);
+  toast("현재 시간표 코드입니다");
+});
 $("txtCopy").addEventListener("click",function(){
-  var ta=$("backupText");ta.select();ta.setSelectionRange(0,999999);
+  var ta=$("backupText");
+  if(!ta.value.trim()){toast("먼저 현재 코드 보기를 누르세요");return;}
+  ta.select();ta.setSelectionRange(0,999999);
   var ok=false;
   try{ok=document.execCommand("copy");}catch(e){}
   if(navigator.clipboard){navigator.clipboard.writeText(ta.value).then(function(){toast("복사했습니다");},function(){});}
   else toast(ok?"복사했습니다":"길게 눌러 복사하세요");
 });
 $("txtLoad").addEventListener("click",function(){
-  try{applyBackup(JSON.parse($("backupText").value));closeSheet("textSheet");toast("복원했습니다");}
-  catch(e){toast("코드 형식이 올바르지 않습니다");}
+  var t=String($("backupText").value||"").replace(/```/g,"").trim();
+  if(!t){toast("코드를 붙여넣으세요");return;}
+  var a=t.indexOf("{"), b=t.lastIndexOf("}");
+  if(a<0||b<=a){toast("코드가 잘린 것 같습니다. 다시 복사해 주세요");return;}
+  var o;
+  try{ o=JSON.parse(t.slice(a,b+1)); }
+  catch(e){ toast("코드가 온전하지 않습니다. 전체를 복사했는지 확인하세요");return; }
+  if(!o||!o.courses||!o.courses.length){toast("수업이 들어있지 않은 코드입니다");return;}
+  applyBackup(o);
+  closeSheet("textSheet");
+  toast(o.courses.length+"개 수업을 넣었습니다");
 });
 $("mReset").addEventListener("click",function(){
   if(!confirm("모든 수업과 보강 기록이 지워집니다. 진행할까요?"))return;
@@ -938,151 +934,19 @@ function clipText(g,txt,x,y,max){
   g.fillText(t+"…",x,y);
 }
 
-/* ══════════ 사진에서 불러오기 ══════════ */
-var apiKeyCache="", photoB64=null, photoMime=null, parsed=[];
-
-function getKey(){return apiKeyCache;}
-function setKey(v){apiKeyCache=v;sSet(KKEY,v);}
-
-$("mPhoto").addEventListener("click",function(){
-  closeSheet("menuSheet");
-  var k=getKey();
-  $("apiKey").value=k;
-  $("keyField").style.display=k?"none":"";
-  $("pStatus").style.display="none";
-  $("pResults").innerHTML="";
-  $("pAddWrap").style.display="none";
-  openSheet("photoSheet");
-});
-$("pClose").addEventListener("click",function(){closeSheet("photoSheet");});
-$("pPick").addEventListener("click",function(){$("photoInput").click();});
-
-$("photoInput").addEventListener("change",function(){
-  var f=this.files&&this.files[0]; this.value="";
-  if(!f)return;
-  shrink(f,function(dataUrl){
-    photoMime="image/jpeg";
-    photoB64=dataUrl.split(",")[1];
-    var p=$("photoPrev"); p.src=dataUrl; p.style.display="";
-    $("pResults").innerHTML=""; $("pAddWrap").style.display="none";
-    setStatus("사진을 넣었습니다. <b>사진 읽기</b>를 누르세요.");
-  });
-});
-
-function shrink(file,cb){
-  var fr=new FileReader();
-  fr.onload=function(){
-    var img=new Image();
-    img.onload=function(){
-      var MAX=1568, w=img.width, h=img.height;
-      var s=Math.min(1,MAX/Math.max(w,h));
-      var cv=document.createElement("canvas");
-      cv.width=Math.round(w*s); cv.height=Math.round(h*s);
-      cv.getContext("2d").drawImage(img,0,0,cv.width,cv.height);
-      cb(cv.toDataURL("image/jpeg",.9));
-    };
-    img.onerror=function(){toast("사진을 읽지 못했습니다");};
-    img.src=fr.result;
-  };
-  fr.readAsDataURL(file);
-}
-function setStatus(html){var s=$("pStatus");s.innerHTML=html;s.style.display="";}
-
-var PROMPT="이 이미지는 학원 강사의 강의 시간표다. 표에 있는 모든 수업을 빠짐없이 추출해 JSON 배열로만 답하라.\n"+
-"각 원소 형식: {\"school\":\"학교명 또는 소속\",\"cls\":\"반 또는 학년\",\"days\":[요일번호],\"start\":\"HH:MM\",\"end\":\"HH:MM\",\"room\":\"강의실\"}\n"+
-"요일번호는 일=0, 월=1, 화=2, 수=3, 목=4, 금=5, 토=6.\n"+
-"같은 수업이 여러 요일에 있으면 days 배열에 모두 넣어 한 원소로 합쳐라.\n"+
-"시간은 24시간 형식. 종료 시간이 없으면 시작 +90분으로 추정하라.\n"+
-"없는 항목은 빈 문자열. 설명·마크다운·코드펜스 없이 JSON 배열만 출력하라.";
-
-$("pRun").addEventListener("click",function(){
-  var key=$("apiKey").value.trim()||getKey();
-  if(!key){toast("API 키를 입력하세요");return;}
-  if(!photoB64){toast("사진을 먼저 선택하세요");return;}
-  setKey(key); $("keyField").style.display="none";
-  setStatus("사진을 읽는 중입니다… 10초쯤 걸립니다.");
-  $("pRun").disabled=true;
-
-  fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{"content-type":"application/json","x-api-key":key,
-      "anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model:"claude-sonnet-4-6",max_tokens:2000,
-      messages:[{role:"user",content:[
-        {type:"image",source:{type:"base64",media_type:photoMime,data:photoB64}},
-        {type:"text",text:PROMPT}]}]})
-  }).then(function(r){return r.json();}).then(function(d){
-    $("pRun").disabled=false;
-    if(d.error){setStatus("읽지 못했습니다: "+esc(d.error.message||"오류"));return;}
-    var txt=(d.content||[]).filter(function(x){return x.type==="text";})
-      .map(function(x){return x.text;}).join("\n");
-    var arr;
-    try{
-      var clean=txt.replace(/```json/g,"").replace(/```/g,"").trim();
-      var a=clean.indexOf("["), b=clean.lastIndexOf("]");
-      arr=JSON.parse(clean.slice(a,b+1));
-    }catch(e){setStatus("결과를 해석하지 못했습니다. 더 또렷한 사진으로 다시 시도하세요.");return;}
-    showParsed(arr);
-  }).catch(function(){
-    $("pRun").disabled=false;
-    setStatus("연결하지 못했습니다. 인터넷 상태와 API 키를 확인하세요.");
-  });
-});
-
-function showParsed(arr){
-  parsed=(arr||[]).filter(function(x){
-    return x&&x.start&&x.end&&x.days&&x.days.length;});
-  if(!parsed.length){setStatus("수업을 찾지 못했습니다. 표가 잘 보이게 다시 찍어 보세요.");return;}
-  setStatus("<b>"+parsed.length+"개</b> 찾았습니다. 넣을 수업만 체크하세요.");
-  var h="";
-  parsed.forEach(function(c,i){
-    var dl=(c.days||[]).slice().sort(function(a,b){
-      return (a===0?7:a)-(b===0?7:b);}).map(function(d){return DW[d];}).join("·");
-    var sub=[c.cls,c.room].filter(Boolean).join(" · ");
-    h+='<label class="prow"><input type="checkbox" data-i="'+i+'" checked>'+
-       '<span class="pi"><span class="ps">'+esc(c.school||"수업")+'</span>'+
-       '<span class="pd">'+esc(dl)+' &nbsp;'+esc(c.start)+'–'+esc(c.end)+
-       (sub?' &nbsp;'+esc(sub):"")+'</span></span></label>';
-  });
-  $("pResults").innerHTML=h;
-  $("pAddWrap").style.display="";
-}
-
-$("pAdd").addEventListener("click",function(){
-  var boxes=$("pResults").querySelectorAll("input[type=checkbox]"), n=0;
-  var seen={};
-  state.courses.forEach(function(c){
-    if(seen[c.school]===undefined)seen[c.school]=c.color;});
-  [].forEach.call(boxes,function(b){
-    if(!b.checked)return;
-    var c=parsed[+b.getAttribute("data-i")];
-    var school=String(c.school||"수업").trim();
-    if(seen[school]===undefined)
-      seen[school]=PALETTE[Object.keys(seen).length%PALETTE.length];
-    state.courses.push({id:uid(),school:school,
-      cls:String(c.cls||"").trim(),room:String(c.room||"").trim(),memo:"",
-      days:c.days.map(Number).filter(function(d){return d>=0&&d<=6;}),
-      start:fixTime(c.start),end:fixTime(c.end),color:seen[school]});
-    n++;
-  });
-  if(!n){toast("선택한 수업이 없습니다");return;}
-  save();render();closeSheet("photoSheet");toast(n+"개 수업을 추가했습니다");
-});
-function fixTime(t){
-  var p=String(t).split(":");
-  var h=Math.max(0,Math.min(23,parseInt(p[0],10)||0));
-  var m=Math.max(0,Math.min(59,parseInt(p[1],10)||0));
-  return pad(h)+":"+pad(m);
-}
-
 /* ══════════ 시작 ══════════ */
-render();
+try{ state=JSON.parse(SEED); }catch(e){}
+normalize(); render();
+
 sGet(KEY).then(function(raw){
-  if(raw){ try{ state=JSON.parse(raw); }catch(e){} }
+  if(touched) return;
+  if(raw){
+    try{ state=JSON.parse(raw); }catch(e){}
+  }else{
+    sSet(KEY,SEED);
+  }
   normalize(); render();
-  return sGet(KKEY);
-}).then(function(k){ apiKeyCache=k||""; })
-  .catch(function(){ normalize(); render(); });
+}).catch(function(){ normalize(); render(); });
 })();
 </script>
 </body>
